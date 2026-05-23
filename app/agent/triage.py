@@ -104,3 +104,28 @@ def enrich_iocs(state: InvestigationState) -> InvestigationState:
 
     state.add_trace("IOC_ENRICHMENT", summary_string)
     return state
+
+def investigate_logs(state: InvestigationState) -> InvestigationState:
+    """
+    Queries log context and correlates events to identify attack patterns.
+    """
+    log_results = query_log_context(state.source_ip, state.target_user)
+    
+    if not hasattr(state, "tool_results") or state.tool_results is None:
+        state.tool_results = {}
+        
+    state.tool_results["log_context"] = log_results
+    
+    correlation_results = correlate_events(state.raw_alert, log_results)
+    state.tool_results["correlation"] = correlation_results
+    
+    state.correlated_events = log_results.get("matched_events", [])
+    
+    total_matched = log_results.get("total_matched", 0)
+    patterns = correlation_results.get("patterns_detected", [])
+    patterns_str = ", ".join(patterns) if patterns else "none"
+    
+    trace_msg = f"Matched {total_matched} events. Patterns detected: {patterns_str}"
+    state.add_trace("LOG_INVESTIGATION", trace_msg)
+    
+    return state
