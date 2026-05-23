@@ -1,5 +1,6 @@
 import os
 import json
+import uuid
 import google.generativeai as genai
 from dotenv import load_dotenv
 
@@ -129,3 +130,75 @@ def investigate_logs(state: InvestigationState) -> InvestigationState:
     state.add_trace("LOG_INVESTIGATION", trace_msg)
     
     return state
+
+class TriageAgent:
+    """
+    Agent responsible for orchestrating the triage, enrichment, log investigation,
+    and report generation for security alerts.
+    """
+    def run(self, alert: dict) -> InvestigationState:
+        alert_id = str(uuid.uuid4())
+        state = InvestigationState(alert_id=alert_id)
+        state.raw_alert = alert
+        state.status = "running"
+        
+        try:
+            state.add_trace("AGENT_START", "Received alert, beginning investigation")
+            
+            # 1. Classify the alert
+            state = classify_alert(state)
+            
+            # 2. Enrich Indicators of Compromise
+            state = enrich_iocs(state)
+            
+            # 3. Investigate logs and correlate events
+            state = investigate_logs(state)
+            
+            # Format reasoning trace for the prompt
+            trace_lines = []
+            for t in getattr(state, "reasoning_trace", []):
+                if isinstance(t, dict):
+                    trace_lines.append(f"[{t.get('step', '')}] {t.get('detail', '')}")
+                else:
+                    trace_lines.append(str(t))
+            reasoning_trace_str = "\n".join(trace_lines)
+            
+            # 4. Generate the final report
+            report_prompt = REPORT_PROMPT.format(
+                alert=json.dumps(state.raw_alert, indent=2),
+                ioc_findings=json.dumps(getattr(state, "ioc_findings", {}), indent=2),
+                correlated_events=json.dumps(getattr(state, "correlated_events", []), indent=2),
+                mitre_techniques=getattr(state, "alert_type", "Unknown"),
+                reasoning_trace=reasoning_trace_str
+            )
+            
+            state.report = call_llm(report_prompt)
+            state.add_trace("REPORT_GENERATED", "Investigation report generated successfully")
+            state.status = "complete"
+            
+        except Exception as e:
+            state.add_trace("AGENT_ERROR", f"An error occurred during investigation: {str(e)}")
+            state.status = "failed"
+            
+        return state
+
+if __name__ == "__main__":
+    from simulator.generator import AlertSimulator
+    
+    print("Initializing Alert Simulator...")
+    simulator = AlertSimulator()
+    brute_force_alert = simulator.get_alert("brute_force")
+    
+    print("Running TriageAgent on brute_force scenario...")
+    agent = TriageAgent()
+    result_state = agent.run(brute_force_alert)
+    
+    print("\n=== REASONING TRACE ===")
+    for trace in getattr(result_state, "reasoning_trace", []):
+        if isinstance(trace, dict):
+            print(f"[{trace.get('step')}] {trace.get('detail')}")
+        else:
+            print(trace)
+            
+    print("\n=== GENERATED REPORT ===")
+    print(getattr(result_state, "report", "No report generated."))
