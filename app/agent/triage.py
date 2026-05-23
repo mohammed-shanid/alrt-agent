@@ -12,6 +12,8 @@ from app.agent.tools import (
     correlate_events
 )
 from app.agent.prompts import CLASSIFY_PROMPT, REPORT_PROMPT
+from app.rag.retriever import search_mitre
+from app.rag.loader import load_mitre_knowledge
 
 # Load environment variables
 load_dotenv()
@@ -141,6 +143,9 @@ class TriageAgent:
     Agent responsible for orchestrating the triage, enrichment, log investigation,
     and report generation for security alerts.
     """
+    def __init__(self):
+        load_mitre_knowledge()
+
     def run(self, alert: dict) -> InvestigationState:
         alert_id = str(uuid.uuid4())
         state = InvestigationState(alert_id=alert_id, raw_alert=alert)
@@ -159,6 +164,15 @@ class TriageAgent:
             # 3. Investigate logs and correlate events
             state = investigate_logs(state)
             
+            # 3.5 MITRE RAG Lookup
+            try:
+                techniques = search_mitre(f"{state.alert_type} {state.severity}")
+                state.mitre_techniques = techniques
+                state.add_trace("MITRE_LOOKUP", f"Retrieved {len(techniques)} MITRE techniques")
+            except Exception as e:
+                state.add_trace("MITRE_LOOKUP", f"Failed to retrieve MITRE techniques: {str(e)}")
+                state.mitre_techniques = []
+
             # Format reasoning trace for the prompt
             trace_lines = []
             for t in getattr(state, "reasoning_trace", []):
@@ -173,7 +187,7 @@ class TriageAgent:
                 alert=json.dumps(state.raw_alert, indent=2),
                 ioc_findings=json.dumps(getattr(state, "ioc_findings", {}), indent=2),
                 correlated_events=json.dumps(getattr(state, "correlated_events", []), indent=2),
-                mitre_techniques=getattr(state, "alert_type", "Unknown"),
+                mitre_techniques=json.dumps(getattr(state, "mitre_techniques", []), indent=2),
                 reasoning_trace=reasoning_trace_str
             )
             
