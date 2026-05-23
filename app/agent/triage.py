@@ -1,7 +1,7 @@
 import os
 import json
 import uuid
-import google.generativeai as genai
+from google import genai
 from dotenv import load_dotenv
 
 from app.agent.state import InvestigationState
@@ -18,19 +18,24 @@ load_dotenv()
 
 # Configure Gemini API
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+client = None
 if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+    client = genai.Client(api_key=GEMINI_API_KEY)
 
 MODEL_NAME = "gemini-1.5-flash"
 
 def call_llm(prompt: str) -> str:
     """
-    Creates a GenerativeModel instance, generates content for the given prompt,
+    Generates content for the given prompt using the Gemini client,
     and returns the response text. Returns an empty string on failure.
     """
     try:
-        model = genai.GenerativeModel(MODEL_NAME)
-        response = model.generate_content(prompt)
+        if not client:
+            raise ValueError("Gemini client is not configured. Please check GEMINI_API_KEY.")
+        response = client.models.generate_content(
+            model=MODEL_NAME,
+            contents=prompt,
+        )
         return response.text
     except Exception as e:
         print(f"Error calling Gemini API: {e}")
