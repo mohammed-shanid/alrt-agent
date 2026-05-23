@@ -47,8 +47,13 @@ def classify_alert(state: InvestigationState) -> InvestigationState:
     """
     Classifies the raw alert using the LLM and updates the state with extracted fields.
     """
-    alert_json_str = json.dumps(state.raw_alert, indent=2)
-    prompt = CLASSIFY_PROMPT.format(alert_json=alert_json_str)
+    if "raw_lines" in state.raw_alert:
+        # Format prompt with the first 20 lines of raw_lines joined by newline
+        lines_to_classify = "\n".join(state.raw_alert["raw_lines"][:20])
+        prompt = CLASSIFY_PROMPT.format(alert_json=lines_to_classify)
+    else:
+        alert_json_str = json.dumps(state.raw_alert, indent=2)
+        prompt = CLASSIFY_PROMPT.format(alert_json=alert_json_str)
     
     response_text = call_llm(prompt)
     

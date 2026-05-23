@@ -2,9 +2,8 @@ import uuid
 import json
 import os
 from typing import Optional
-from fastapi import FastAPI, BackgroundTasks, HTTPException
+from fastapi import FastAPI, BackgroundTasks, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 
 from app.agent.triage import TriageAgent
 from simulator.generator import AlertSimulator
@@ -27,10 +26,6 @@ investigations = {}
 agent = TriageAgent()
 simulator = AlertSimulator()
 
-class AlertRequest(BaseModel):
-    scenario: Optional[str] = "random"
-    alert_data: Optional[dict] = None
-
 def run_triage_task(alert_id: str, alert_data: dict):
     try:
         # Ensure the alert dict has the correct alert_id
@@ -52,11 +47,16 @@ def health_check():
     return {"status": "ok", "service": "AlrtAgent"}
 
 @app.post("/alert")
-def trigger_alert(payload: AlertRequest, background_tasks: BackgroundTasks):
-    if payload.alert_data is not None:
-        alert = payload.alert_data
-    else:
-        scenario = payload.scenario or "random"
+async def trigger_alert(request: Request, background_tasks: BackgroundTasks):
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+    if "alert_data" in body:
+        alert = body["alert_data"]
+    elif "scenario" in body and body["scenario"] != "custom":
+        scenario = body.get("scenario", "random")
         try:
             if scenario == "random":
                 alert = simulator.get_random_alert()
@@ -64,6 +64,9 @@ def trigger_alert(payload: AlertRequest, background_tasks: BackgroundTasks):
                 alert = simulator.get_alert(scenario)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to load scenario '{scenario}': {str(e)}")
+    else:
+        # Fallback to treating the entire body as the alert payload
+        alert = body
 
     alert_id = str(uuid.uuid4())
     
