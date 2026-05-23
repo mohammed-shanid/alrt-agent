@@ -143,7 +143,7 @@ class TriageAgent:
     """
     def run(self, alert: dict) -> InvestigationState:
         alert_id = str(uuid.uuid4())
-        state = InvestigationState(alert_id=alert_id)
+        state = InvestigationState(alert_id=alert_id, raw_alert=alert)
         state.raw_alert = alert
         state.status = "running"
         
