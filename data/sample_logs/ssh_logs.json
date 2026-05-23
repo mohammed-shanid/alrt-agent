@@ -1,0 +1,74 @@
+[
+  {
+    "timestamp": "2024-01-15T02:40:00Z",
+    "event_type": "ssh_login_failed",
+    "source_ip": "185.220.101.47",
+    "destination_ip": "192.168.1.10",
+    "user": "admin",
+    "message": "Failed password for admin from 185.220.101.47 port 49152 ssh2",
+    "hostname": "prod-server-01"
+  },
+  {
+    "timestamp": "2024-01-15T02:41:30Z",
+    "event_type": "ssh_login_failed",
+    "source_ip": "185.220.101.47",
+    "destination_ip": "192.168.1.10",
+    "user": "admin",
+    "message": "Failed password for admin from 185.220.101.47 port 49158 ssh2",
+    "hostname": "prod-server-01"
+  },
+  {
+    "timestamp": "2024-01-15T02:43:00Z",
+    "event_type": "ssh_login_failed",
+    "source_ip": "185.220.101.47",
+    "destination_ip": "192.168.1.10",
+    "user": "admin",
+    "message": "Failed password for admin from 185.220.101.47 port 49164 ssh2",
+    "hostname": "prod-server-01"
+  },
+  {
+    "timestamp": "2024-01-15T02:44:15Z",
+    "event_type": "ssh_login_failed",
+    "source_ip": "185.220.101.47",
+    "destination_ip": "192.168.1.10",
+    "user": "admin",
+    "message": "Failed password for admin from 185.220.101.47 port 49170 ssh2",
+    "hostname": "prod-server-01"
+  },
+  {
+    "timestamp": "2024-01-15T02:45:50Z",
+    "event_type": "ssh_login_failed",
+    "source_ip": "185.220.101.47",
+    "destination_ip": "192.168.1.10",
+    "user": "admin",
+    "message": "Failed password for admin from 185.220.101.47 port 49176 ssh2",
+    "hostname": "prod-server-01"
+  },
+  {
+    "timestamp": "2024-01-15T02:47:00Z",
+    "event_type": "ssh_login_success",
+    "source_ip": "185.220.101.47",
+    "destination_ip": "192.168.1.10",
+    "user": "admin",
+    "message": "Accepted password for admin from 185.220.101.47 port 49182 ssh2",
+    "hostname": "prod-server-01"
+  },
+  {
+    "timestamp": "2024-01-15T02:47:30Z",
+    "event_type": "command_execution",
+    "source_ip": "185.220.101.47",
+    "destination_ip": "192.168.1.10",
+    "user": "admin",
+    "message": "COMMAND=cat /etc/passwd",
+    "hostname": "prod-server-01"
+  },
+  {
+    "timestamp": "2024-01-15T02:51:00Z",
+    "event_type": "ssh_connection",
+    "source_ip": "10.0.0.12",
+    "destination_ip": "10.0.0.14",
+    "user": "root",
+    "message": "Connection established from 10.0.0.12 to 10.0.0.14",
+    "hostname": "internal-jump-01"
+  }
+]
