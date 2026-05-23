@@ -1,7 +1,6 @@
 import uuid
 import json
 import os
-import dataclasses
 from typing import Optional
 from fastapi import FastAPI, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -84,7 +83,7 @@ def get_investigation(alert_id: str):
     state = record["state"]
     
     if state is not None:
-        state_dict = dataclasses.asdict(state)
+        state_dict = state.to_dict()
         return {
             "status": status,
             **state_dict

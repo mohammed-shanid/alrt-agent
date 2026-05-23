@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+import dataclasses
 from typing import List, Dict, Any
 
 @dataclass
@@ -26,3 +27,7 @@ class InvestigationState:
     def add_tool_result(self, tool_name: str, result: dict) -> None:
         """Saves result into tool_results under that tool name."""
         self.tool_results[tool_name] = result
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Returns all fields as a plain Python dict."""
+        return dataclasses.asdict(self)
