@@ -74,3 +74,33 @@ def classify_alert(state: InvestigationState) -> InvestigationState:
         state.add_trace("CLASSIFY", f"Classification failed to parse JSON: {str(e)}")
         
     return state
+
+def enrich_iocs(state: InvestigationState) -> InvestigationState:
+    """
+    Enriches the source IP using AbuseIPDB and VirusTotal APIs.
+    """
+    if not state.source_ip:
+        state.add_trace("IOC_ENRICHMENT", "No IP to enrich")
+        return state
+
+    abuseipdb_res = check_ip_abuseipdb(state.source_ip)
+    virustotal_res = check_ip_virustotal(state.source_ip)
+
+    if not hasattr(state, "ioc_findings") or state.ioc_findings is None:
+        state.ioc_findings = {}
+
+    state.ioc_findings["abuseipdb"] = abuseipdb_res
+    state.ioc_findings["virustotal"] = virustotal_res
+
+    score = abuseipdb_res.get("abuse_confidence_score", 0)
+    isp = abuseipdb_res.get("isp") or ""
+    verdict = virustotal_res.get("verdict", "unknown")
+    malicious = virustotal_res.get("malicious_votes", 0)
+
+    summary_string = f"AbuseIPDB score: {score}, ISP: {isp} — VirusTotal verdict: {verdict} with {malicious} malicious votes"
+
+    if "tor" in isp.lower():
+        state.ioc_findings["is_tor"] = True
+
+    state.add_trace("IOC_ENRICHMENT", summary_string)
+    return state
