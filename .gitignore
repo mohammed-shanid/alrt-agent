@@ -1,0 +1,8 @@
+.aider*
+.env
+.aider.chat.history.md
+brain-dump.txt
+# Virtual Environments
+venv/
+.venv/
+env/
