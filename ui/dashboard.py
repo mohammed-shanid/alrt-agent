@@ -3,6 +3,7 @@ import streamlit as st
 import requests
 import json
 import time
+from datetime import datetime, timezone
 
 API_URL = "http://localhost:8000"
 
@@ -36,6 +37,50 @@ if st.sidebar.button("Data Exfiltration"):
 st.sidebar.markdown("---")
 if st.sidebar.button("Refresh"):
     st.rerun()
+
+# Upload Log File Section
+st.sidebar.divider()
+st.sidebar.subheader("Upload Log File")
+uploaded_file = st.sidebar.file_uploader("Upload alert JSON or log file", type=["json", "log"])
+
+if uploaded_file is not None:
+    file_key = f"processed_{uploaded_file.name}_{uploaded_file.size}"
+    if st.session_state.get("last_uploaded_file_key") != file_key:
+        try:
+            file_bytes = uploaded_file.read()
+            file_content = file_bytes.decode("utf-8")
+            
+            # Try parsing as JSON
+            try:
+                parsed_json = json.loads(file_content)
+                payload = {"scenario": "custom", "alert_data": parsed_json}
+            except json.JSONDecodeError:
+                # Try parsing as raw syslog lines
+                lines = [line.strip() for line in file_content.splitlines() if line.strip()]
+                if not lines:
+                    raise ValueError("Uploaded file is empty or contains only whitespace.")
+                
+                constructed_alert = {
+                    "alert_type": "raw_log_upload",
+                    "source": "manual_upload",
+                    "raw_lines": lines,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "severity_raw": "unknown"
+                }
+                payload = {"scenario": "custom", "alert_data": constructed_alert}
+            
+            # POST to API
+            response = requests.post(f"{API_URL}/alert", json=payload)
+            if response.status_code == 200:
+                data = response.json()
+                st.session_state["active_alert_id"] = data["alert_id"]
+                st.session_state["last_uploaded_file_key"] = file_key
+                st.sidebar.success("Log submitted for investigation")
+                st.rerun()
+            else:
+                st.sidebar.error(f"Error triggering alert: {response.text}")
+        except Exception as e:
+            st.sidebar.error(f"Failed to process uploaded file: {str(e)}")
 
 # Main Area
 active_alert_id = st.session_state.get("active_alert_id")

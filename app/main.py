@@ -29,6 +29,7 @@ simulator = AlertSimulator()
 
 class AlertRequest(BaseModel):
     scenario: Optional[str] = "random"
+    alert_data: Optional[dict] = None
 
 def run_triage_task(alert_id: str, alert_data: dict):
     try:
@@ -52,15 +53,17 @@ def health_check():
 
 @app.post("/alert")
 def trigger_alert(payload: AlertRequest, background_tasks: BackgroundTasks):
-    scenario = payload.scenario or "random"
-    
-    try:
-        if scenario == "random":
-            alert = simulator.get_random_alert()
-        else:
-            alert = simulator.get_alert(scenario)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to load scenario '{scenario}': {str(e)}")
+    if payload.alert_data is not None:
+        alert = payload.alert_data
+    else:
+        scenario = payload.scenario or "random"
+        try:
+            if scenario == "random":
+                alert = simulator.get_random_alert()
+            else:
+                alert = simulator.get_alert(scenario)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to load scenario '{scenario}': {str(e)}")
 
     alert_id = str(uuid.uuid4())
     
