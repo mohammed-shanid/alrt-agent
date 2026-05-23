@@ -180,3 +180,81 @@ def check_ip_virustotal(ip: str) -> dict:
             "error": True,
             "message": str(e)
         }
+
+def correlate_events(alert: dict, log_results: dict) -> dict:
+    """
+    Correlates alert data with log results to identify specific attack patterns.
+
+    Args:
+        alert (dict): The alert details.
+        log_results (dict): The results from query_log_context.
+
+    Returns:
+        dict: A dictionary containing:
+            - "patterns_detected": list of pattern names that are true.
+            - "attack_sequence_identified": bool, true if credential_brute_force and
+              successful_auth_after_brute_force are both true.
+            - "confidence": str, "high", "medium", "low", or "none" based on patterns count.
+    """
+    patterns_detected = []
+    matched_events = log_results.get("matched_events", [])
+    total_matched = log_results.get("total_matched", 0)
+
+    # 1. credential_brute_force
+    alert_type = alert.get("alert_type", "")
+    if total_matched > 3 and "brute_force" in alert_type:
+        patterns_detected.append("credential_brute_force")
+
+    # 2. successful_auth_after_brute_force
+    has_success = False
+    for event in matched_events:
+        event_type = event.get("event_type", "")
+        if "success" in event_type or "accepted" in event_type:
+            has_success = True
+            break
+    if has_success:
+        patterns_detected.append("successful_auth_after_brute_force")
+
+    # 3. lateral_movement_detected
+    alert_source_ip = alert.get("source_ip", "")
+    has_lateral = False
+    for event in matched_events:
+        dest_ip = event.get("destination_ip", "")
+        if dest_ip and alert_source_ip and dest_ip != alert_source_ip:
+            has_lateral = True
+            break
+    if has_lateral:
+        patterns_detected.append("lateral_movement_detected")
+
+    # 4. privilege_escalation_attempt
+    has_priv_esc = False
+    for event in matched_events:
+        message = event.get("message", "")
+        if any(term in message for term in ["passwd", "shadow", "sudo"]):
+            has_priv_esc = True
+            break
+    if has_priv_esc:
+        patterns_detected.append("privilege_escalation_attempt")
+
+    # Determine attack sequence identification
+    attack_sequence_identified = (
+        "credential_brute_force" in patterns_detected and
+        "successful_auth_after_brute_force" in patterns_detected
+    )
+
+    # Determine confidence level
+    num_patterns = len(patterns_detected)
+    if num_patterns >= 3:
+        confidence = "high"
+    elif num_patterns == 2:
+        confidence = "medium"
+    elif num_patterns == 1:
+        confidence = "low"
+    else:
+        confidence = "none"
+
+    return {
+        "patterns_detected": patterns_detected,
+        "attack_sequence_identified": attack_sequence_identified,
+        "confidence": confidence
+    }
