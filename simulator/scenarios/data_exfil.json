@@ -1,0 +1,14 @@
+{
+  "alert_id": "alert-de-001",
+  "timestamp": "2024-01-15 03:12:00 UTC",
+  "alert_type": "data_exfiltration",
+  "source_ip": "10.0.0.14",
+  "destination_ip": "91.108.4.33",
+  "destination_port": 443,
+  "bytes_transferred": 524288000,
+  "protocol": "HTTPS",
+  "process_name": "python3",
+  "user": "postgres",
+  "severity_raw": "critical",
+  "log_source": "netflow"
+}

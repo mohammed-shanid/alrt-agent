@@ -1,0 +1,17 @@
+{
+  "alert_id": "alert-bf-001",
+  "timestamp": "2024-01-15 02:47:00 UTC",
+  "alert_type": "brute_force_ssh",
+  "source_ip": "185.220.101.47",
+  "target_system": "prod-server-01",
+  "target_user": "admin",
+  "attempt_count": 847,
+  "success": true,
+  "post_auth_commands": [
+    "whoami",
+    "cat /etc/passwd",
+    "ssh 10.0.0.14"
+  ],
+  "severity_raw": "high",
+  "log_source": "syslog"
+}

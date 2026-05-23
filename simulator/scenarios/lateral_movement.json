@@ -1,0 +1,16 @@
+{
+  "alert_id": "alert-lm-001",
+  "timestamp": "2024-01-15 02:51:00 UTC",
+  "alert_type": "lateral_movement",
+  "source_ip": "10.0.0.12",
+  "source_user": "admin",
+  "destination_ip": "10.0.0.14",
+  "destination_system": "db-server-01",
+  "method": "ssh_key_reuse",
+  "files_accessed": [
+    "/etc/shadow",
+    "/var/lib/postgresql"
+  ],
+  "severity_raw": "critical",
+  "log_source": "cloudtrail"
+}
