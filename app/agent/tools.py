@@ -51,3 +51,46 @@ def check_ip_abuseipdb(ip: str) -> dict:
             "error": True,
             "message": str(e)
         }
+
+def check_ip_virustotal(ip: str) -> dict:
+    """
+    Calls the VirusTotal v3 IP address endpoint to gather reputation data.
+    """
+    url = f"https://www.virustotal.com/api/v3/ip_addresses/{ip}"
+    headers = {
+        "x-apikey": VIRUSTOTAL_API_KEY or ""
+    }
+
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        res_json = response.json()
+        
+        data = res_json.get("data", {})
+        attributes = data.get("attributes", {})
+        stats = attributes.get("last_analysis_stats", {})
+
+        malicious = stats.get("malicious", 0)
+        suspicious = stats.get("suspicious", 0)
+        harmless = stats.get("harmless", 0)
+
+        if malicious > 2:
+            verdict = "malicious"
+        elif suspicious > 2:
+            verdict = "suspicious"
+        else:
+            verdict = "clean"
+
+        return {
+            "ip": ip,
+            "malicious_votes": malicious,
+            "suspicious_votes": suspicious,
+            "harmless_votes": harmless,
+            "verdict": verdict
+        }
+    except Exception as e:
+        return {
+            "ip": ip,
+            "error": True,
+            "message": str(e)
+        }
