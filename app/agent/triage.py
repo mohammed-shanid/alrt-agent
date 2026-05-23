@@ -34,3 +34,43 @@ def call_llm(prompt: str) -> str:
     except Exception as e:
         print(f"Error calling Gemini API: {e}")
         return ""
+
+def classify_alert(state: InvestigationState) -> InvestigationState:
+    """
+    Classifies the raw alert using the LLM and updates the state with extracted fields.
+    """
+    alert_json_str = json.dumps(state.raw_alert, indent=2)
+    prompt = CLASSIFY_PROMPT.format(alert_json=alert_json_str)
+    
+    response_text = call_llm(prompt)
+    
+    # Strip markdown backticks and clean up the response
+    cleaned_response = response_text.strip()
+    if cleaned_response.startswith("```"):
+        # Split by newline to remove the opening ```json or ```
+        lines = cleaned_response.splitlines()
+        if lines and lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+        cleaned_response = "\n".join(lines).strip()
+    else:
+        cleaned_response = cleaned_response.strip("`").strip()
+
+    try:
+        data = json.loads(cleaned_response)
+        state.alert_type = data.get("alert_type", "unknown")
+        state.severity = data.get("severity", "medium")
+        state.source_ip = data.get("source_ip", "")
+        state.target_user = data.get("target_user", "")
+        state.affected_system = data.get("affected_system", "")
+        
+        state.add_trace(
+            "CLASSIFY", 
+            f"Alert classified as {state.alert_type} — severity {state.severity} — source IP {state.source_ip}"
+        )
+    except Exception as e:
+        state.alert_type = "unknown"
+        state.add_trace("CLASSIFY", f"Classification failed to parse JSON: {str(e)}")
+        
+    return state
