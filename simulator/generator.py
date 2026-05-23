@@ -1,7 +1,7 @@
 import json
 import random
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 
 class AlertSimulator:
@@ -30,7 +30,7 @@ class AlertSimulator:
         
         # Replace alert_id and timestamp with fresh values
         alert["alert_id"] = str(uuid.uuid4())
-        alert["timestamp"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+        alert["timestamp"] = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S UTC")
         
         return alert
 
