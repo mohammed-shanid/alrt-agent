@@ -14,15 +14,15 @@
 [![DeepSeek](https://img.shields.io/badge/DeepSeek_V3-4A90D9?style=flat-square&logo=openai&logoColor=white)](https://deepseek.com)
 [![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=flat-square&logo=streamlit&logoColor=white)](https://streamlit.io)
 
-[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Streamlit_Cloud-FF4B4B?style=flat-square)](YOUR_STREAMLIT_URL)
-[![API Docs](https://img.shields.io/badge/📡_API_Docs-Render-46E3B7?style=flat-square)](YOUR_RENDER_URL/docs)
-[![GitHub Stars](https://img.shields.io/github/stars/YOUR_USERNAME/alrt-agent?style=flat-square&color=yellow)](https://github.com/YOUR_USERNAME/alrt-agent/stargazers)
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Streamlit_Cloud-FF4B4B?style=flat-square)](https://alrt-agent-wssr8njssh7sabmsygddki.streamlit.app/)
+[![API Docs](https://img.shields.io/badge/📡_API_Docs-Render-46E3B7?style=flat-square)](https://alrt-agent.onrender.com/docs)
+[![GitHub](https://img.shields.io/badge/GitHub-alrt--agent-181717?style=flat-square&logo=github)](https://github.com/mohammed-shanid/alrt-agent)
 
 ---
 
 > *"Automated what a Tier-1 SOC analyst takes 30 minutes to do — in 30 seconds."*
 
-**[🎥 Watch Demo Video](YOUR_LOOM_URL)** • **[🚀 Live Demo](YOUR_STREAMLIT_URL)** • **[📡 API](YOUR_RENDER_URL/docs)**
+**[🚀 Live Demo](https://alrt-agent-wssr8njssh7sabmsygddki.streamlit.app/)** • **[📡 API Docs](https://alrt-agent.onrender.com/docs)** • **[💻 GitHub](https://github.com/mohammed-shanid/alrt-agent)**
 
 </div>
 
@@ -36,7 +36,7 @@ Most SOC teams receive **3,800+ alerts per day**. **62% go uninvestigated** due 
 
 It is an autonomous agent that:
 - **Receives** SIEM alerts via webhook or manual upload
-- **Enriches** IOCs against real threat intelligence databases
+- **Enriches** IOCs against real threat intelligence databases (AbuseIPDB + VirusTotal)
 - **Correlates** multi-event attack sequences from log data
 - **Maps** attacker behavior to MITRE ATT&CK techniques via RAG
 - **Generates** a complete analyst-grade investigation report
@@ -48,15 +48,15 @@ No human in the loop. No templates. Real conclusions.
 ## 📸 Screenshots
 
 ### Dashboard — Live Investigation
-![AlrtAgent Dashboard](YOUR_SCREENSHOT_URL_DASHBOARD)
+![AlrtAgent Dashboard](assets/dashboard.png)
 *Real-time reasoning trace showing every step the agent took to reach its conclusions*
 
 ### Investigation Report Output
-![Investigation Report](YOUR_SCREENSHOT_URL_REPORT)
+![Investigation Report](assets/report.png)
 *Analyst-grade report with executive summary, IOC analysis, MITRE mapping, and recommended actions*
 
 ### File Upload — Forensic Mode
-![File Upload](YOUR_SCREENSHOT_URL_UPLOAD)
+![File Upload](assets/upload.png)
 *Upload raw JSON alerts or syslog files for instant forensic investigation*
 
 ---
@@ -68,8 +68,8 @@ SIEM Alert / Uploaded Log
           │
           ▼
 ┌─────────────────────┐
-│   FastAPI Backend   │  POST /alert
-│   (Ingestion Layer) │
+│   FastAPI Backend   │  ← https://alrt-agent.onrender.com
+│   POST /alert       │
 └──────────┬──────────┘
            │
            ▼
@@ -92,7 +92,9 @@ SIEM Alert / Uploaded Log
                        ▼
           ┌────────────────────────┐
           │   Streamlit Dashboard  │
-          │  Trace + Report + UI   │
+          │  https://alrt-agent-   │
+          │  wssr8njssh7sabmsygddk │
+          │  i.streamlit.app/      │
           └────────────────────────┘
 ```
 
@@ -103,15 +105,15 @@ SIEM Alert / Uploaded Log
 Every investigation produces a visible step-by-step trace:
 
 ```
-✅ [AGENT_START]      Received alert, beginning investigation
-✅ [CLASSIFY]         Alert classified as brute_force — severity HIGH — source IP 185.220.101.47
-✅ [IOC_ENRICHMENT]   AbuseIPDB score: 100, ISP: Network for Tor-Exit traffic
-                      VirusTotal verdict: malicious with 13 malicious votes
+✅ [AGENT_START]       Received alert, beginning investigation
+✅ [CLASSIFY]          Alert classified as brute_force — severity HIGH — source IP 185.220.101.47
+✅ [IOC_ENRICHMENT]    AbuseIPDB score: 100, ISP: Network for Tor-Exit traffic
+                       VirusTotal verdict: malicious with 13 malicious votes
 ✅ [LOG_INVESTIGATION] Matched 7 events
-                      Patterns: credential_brute_force, successful_auth_after_brute_force,
-                      lateral_movement_detected, privilege_escalation_attempt
-✅ [MITRE_LOOKUP]     Retrieved 3 MITRE ATT&CK techniques
-✅ [REPORT_GENERATED] Investigation report generated successfully
+                       Patterns: credential_brute_force, successful_auth_after_brute_force,
+                       lateral_movement_detected, privilege_escalation_attempt
+✅ [MITRE_LOOKUP]      Retrieved 3 MITRE ATT&CK techniques
+✅ [REPORT_GENERATED]  Investigation report generated successfully
 ```
 
 ---
@@ -131,7 +133,7 @@ Every investigation produces a visible step-by-step trace:
 
 ## 🛡️ Sample Investigation Report
 
-> **The following report was generated autonomously by AlrtAgent from a synthetic brute-force scenario. No human wrote this.**
+> **The following report was generated autonomously by AlrtAgent. No human wrote this.**
 
 ---
 
@@ -142,6 +144,7 @@ Every investigation produces a visible step-by-step trace:
 A confirmed successful SSH brute-force attack against `prod-server-01` targeting the `admin` user. The attack originated from `185.220.101.47` — a known Tor exit node with AbuseIPDB confidence score of **100/100** and **13 malicious votes** on VirusTotal. After 847 login attempts the threat actor gained administrative access and immediately executed post-exploitation commands including credential harvesting (`cat /etc/passwd`) and lateral movement (`ssh 10.0.0.14`).
 
 ### MITRE ATT&CK Mapping
+
 | Technique ID | Name | Observed Behavior |
 |---|---|---|
 | T1110.001 | Password Guessing | 847 failed SSH attempts |
@@ -160,29 +163,34 @@ A confirmed successful SSH brute-force attack against `prod-server-01` targeting
 
 ## 🚀 Quick Start
 
-### Option 1 — Docker (Recommended)
+### Option 1 — Try it live (no setup)
+👉 **[https://alrt-agent-wssr8njssh7sabmsygddki.streamlit.app/](https://alrt-agent-wssr8njssh7sabmsygddki.streamlit.app/)**
+
+Click any attack scenario and watch the agent investigate in real time.
+
+### Option 2 — Docker (Recommended for local)
 ```bash
-git clone https://github.com/YOUR_USERNAME/alrt-agent
+git clone https://github.com/mohammed-shanid/alrt-agent
 cd alrt-agent
 cp .env.example .env
-# Fill in your API keys in .env
+# Add your API keys to .env
 docker-compose up
 ```
-Open `http://localhost:8501` — click any attack scenario — watch the agent work.
+Open `http://localhost:8501`
 
-### Option 2 — Local
+### Option 3 — Local Python
 ```bash
-git clone https://github.com/YOUR_USERNAME/alrt-agent
+git clone https://github.com/mohammed-shanid/alrt-agent
 cd alrt-agent
 python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
-# Fill in your API keys in .env
+# Add your API keys to .env
 
-# Terminal 1
+# Terminal 1 — API
 uvicorn app.main:app --reload --port 8000
 
-# Terminal 2
+# Terminal 2 — UI
 streamlit run ui/dashboard.py
 ```
 
@@ -190,11 +198,11 @@ streamlit run ui/dashboard.py
 
 ## 🔑 API Keys Required
 
-| Service | Purpose | Cost | Link |
-|---------|---------|------|------|
+| Service | Purpose | Cost | Get Key |
+|---------|---------|------|---------|
 | DeepSeek V3 | LLM reasoning + report generation | ~$0.001/investigation | [platform.deepseek.com](https://platform.deepseek.com) |
-| AbuseIPDB | IP reputation + Tor detection | Free (1000/day) | [abuseipdb.com](https://abuseipdb.com) |
-| VirusTotal | IP malicious vote count | Free (500/day) | [virustotal.com](https://virustotal.com) |
+| AbuseIPDB | IP reputation + Tor detection | Free (1000/day) | [abuseipdb.com](https://www.abuseipdb.com) |
+| VirusTotal | IP malicious vote count | Free (500/day) | [virustotal.com](https://www.virustotal.com) |
 | Gemini Flash | Alternative LLM (optional) | Free tier | [aistudio.google.com](https://aistudio.google.com) |
 
 ---
@@ -222,7 +230,7 @@ alrt-agent/
 │       ├── lateral_movement.json
 │       └── data_exfil.json
 ├── ui/
-│   └── dashboard.py         # Streamlit — trace + report UI
+│   └── dashboard.py         # Streamlit — trace + report + file upload
 ├── data/
 │   ├── mitre_snippets/      # MITRE ATT&CK knowledge base
 │   └── sample_logs/         # Synthetic syslog data
@@ -234,37 +242,47 @@ alrt-agent/
 
 ## 📡 API Reference
 
+Base URL: `https://alrt-agent.onrender.com`
+
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/health` | Service health check |
-| `POST` | `/alert` | Submit alert for investigation |
-| `GET` | `/investigation/{id}` | Get full investigation result |
-| `GET` | `/investigations` | List all investigations |
-| `GET` | `/docs` | Interactive Swagger UI |
+| `GET` | [`/health`](https://alrt-agent.onrender.com/health) | Service health check |
+| `POST` | [`/alert`](https://alrt-agent.onrender.com/docs#/default/submit_alert_alert_post) | Submit alert for investigation |
+| `GET` | [`/investigation/{id}`](https://alrt-agent.onrender.com/docs#/default/get_investigation_investigation__alert_id__get) | Get full investigation result |
+| `GET` | [`/investigations`](https://alrt-agent.onrender.com/investigations) | List all investigations |
+| `GET` | [`/docs`](https://alrt-agent.onrender.com/docs) | Interactive Swagger UI |
 
-**Example:**
+**Example — trigger investigation via curl:**
 ```bash
-curl -X POST https://YOUR_RENDER_URL/alert \
+curl -X POST https://alrt-agent.onrender.com/alert \
   -H "Content-Type: application/json" \
-  -d '{"alert_type": "brute_force_ssh", "source_ip": "185.220.101.47", "target_user": "admin"}'
+  -d '{
+    "alert_type": "brute_force_ssh",
+    "source_ip": "185.220.101.47",
+    "target_user": "admin",
+    "target_system": "prod-server-01",
+    "attempt_count": 847,
+    "success": true,
+    "severity_raw": "high"
+  }'
 ```
 
 ---
 
-## 🔄 Real-World Integration
+## 🔄 Real-World SIEM Integration
 
-AlrtAgent exposes a standard webhook endpoint. Any SIEM can POST alerts to it:
+AlrtAgent exposes a standard webhook endpoint — any SIEM can POST alerts to it directly:
 
 ```
-Splunk Alert Action  ──→  POST /alert  ──→  AlrtAgent  ──→  Report
-IBM QRadar Webhook   ──→  POST /alert  ──→  AlrtAgent  ──→  Report
-Elastic SIEM Rule    ──→  POST /alert  ──→  AlrtAgent  ──→  Report
-Manual Log Upload    ──→  POST /alert  ──→  AlrtAgent  ──→  Report
+Splunk Alert Action  ──→  POST https://alrt-agent.onrender.com/alert
+IBM QRadar Webhook   ──→  POST https://alrt-agent.onrender.com/alert
+Elastic SIEM Rule    ──→  POST https://alrt-agent.onrender.com/alert
+Manual Log Upload    ──→  UI at alrt-agent.streamlit.app
 ```
 
 **Supported input formats:**
 - Structured JSON alert (SIEM webhook format)
-- Raw syslog lines (`.log` file upload)
+- Raw syslog lines (`.log` file upload via UI)
 - AWS CloudTrail JSON
 - Custom JSON with any alert fields
 
@@ -272,8 +290,8 @@ Manual Log Upload    ──→  POST /alert  ──→  AlrtAgent  ──→  Re
 
 ## 🧪 Attack Scenarios Included
 
-| Scenario | Attack Type | IOCs | Patterns Detected |
-|----------|------------|------|------------------|
+| Scenario | Attack Type | IOC | Patterns Detected |
+|----------|------------|-----|------------------|
 | `brute_force` | SSH brute force → successful auth | `185.220.101.47` (Tor, score 100) | 4 patterns |
 | `lateral_movement` | Post-compromise SSH pivoting | `10.0.0.12` → `10.0.0.14` | 3 patterns |
 | `data_exfil` | Outbound data transfer via HTTPS | `91.108.4.33` | 2 patterns |
@@ -288,34 +306,38 @@ Manual Log Upload    ──→  POST /alert  ──→  AlrtAgent  ──→  Re
 - [x] MITRE ATT&CK RAG retrieval
 - [x] Analyst-grade report generation
 - [x] Streamlit dashboard with live reasoning trace
-- [x] File upload for forensic investigation
+- [x] File upload for forensic log investigation
 - [x] Docker deployment
+- [x] Live deployment (Render + Streamlit Cloud)
 - [ ] Splunk webhook integration
-- [ ] Real attack traffic from Kali Linux VM
+- [ ] Real attack traffic pipeline (Kali Linux VM)
 - [ ] Slack/Teams alert notifications
 - [ ] PDF report export
-- [ ] Multi-alert campaign detection
+- [ ] Multi-alert campaign correlation
 
 ---
 
-## 👨‍💻 Built By
+## 👨‍💻 About The Builder
 
 **Mohammed Shanid K. S.**
 Final Year B.Tech — Cyber Security & Cyber Forensics
 Srinivas University Institute of Engineering and Technology
 
-Also built: **[MedRAGShield](YOUR_MEDRAGSHIELD_LINK)** — Adversarial defense framework for medical RAG systems (Published: IEEE TechRxiv)
+**Other projects:**
+- 🏥 **[MedRAGShield](https://github.com/mohammed-shanid)** — Adversarial defense framework for medical RAG systems. Published on IEEE TechRxiv. Built with Python, ChromaDB, Llama 3.2, FastAPI, Gradio.
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0077B5?style=flat-square&logo=linkedin)](YOUR_LINKEDIN_URL)
-[![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=flat-square&logo=github)](https://github.com/YOUR_USERNAME)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Mohammed_Shanid-0077B5?style=flat-square&logo=linkedin)](https://linkedin.com/in/mohammed-shanid)
+[![GitHub](https://img.shields.io/badge/GitHub-mohammed--shanid-181717?style=flat-square&logo=github)](https://github.com/mohammed-shanid)
 
 ---
 
-## ⭐ If this project helped you, leave a star — it helps others find it.
-
 <div align="center">
 
-**AlrtAgent** is a portfolio demonstration of autonomous AI-security engineering.
-It is not affiliated with any commercial SOC product.
+**If this project helped you or impressed you — drop a ⭐**
+
+It helps other security engineers find it.
+
+*AlrtAgent is a portfolio demonstration of autonomous AI-security engineering.*
+*Not affiliated with any commercial SOC product.*
 
 </div>
