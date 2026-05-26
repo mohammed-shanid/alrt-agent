@@ -326,7 +326,7 @@ Srinivas University Institute of Engineering and Technology
 **Other projects:**
 - 🏥 **[MedRAGShield](https://github.com/mohammed-shanid)** — Adversarial defense framework for medical RAG systems. Published on IEEE TechRxiv. Built with Python, ChromaDB, Llama 3.2, FastAPI, Gradio.
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Mohammed_Shanid-0077B5?style=flat-square&logo=linkedin)](https://linkedin.com/in/mohammed-shanid)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Mohammed_Shanid-0077B5?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/mohammed-shanid-785563262/)
 [![GitHub](https://img.shields.io/badge/GitHub-mohammed--shanid-181717?style=flat-square&logo=github)](https://github.com/mohammed-shanid)
 
 ---
